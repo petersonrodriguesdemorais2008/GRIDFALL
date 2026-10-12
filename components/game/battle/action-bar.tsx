@@ -88,13 +88,14 @@ export function ActionBar({ state, disabled, onAction }: ActionBarProps) {
           <ActionButton
             icon={<Sword className="size-4" aria-hidden="true" />}
             label={T.attack}
+            hint={ELEMENTS[BATTLE_RULES.attackElement].code}
             disabled={!isMyTurn}
             onClick={() => send({ type: 'ATTACK', side: 'player', target })}
           />
           <ActionButton
             icon={<Sparkles className="size-4" aria-hidden="true" />}
             label={skill.name}
-            hint={`${skill.mpCost} MP`}
+            hint={skill.element ? `${skill.mpCost} MP · ${ELEMENTS[skill.element].code}` : `${skill.mpCost} MP`}
             disabled={!isMyTurn || member.mp < skill.mpCost}
             onClick={() => send({ type: 'SKILL', side: 'player', target })}
             title={skill.description}
@@ -102,7 +103,7 @@ export function ActionBar({ state, disabled, onAction }: ActionBarProps) {
           <ActionButton
             icon={<Star className="size-4" aria-hidden="true" />}
             label={T.special}
-            hint={`${BATTLE_RULES.specialStarCost} estrelas`}
+            hint={`${BATTLE_RULES.specialStarCost} estrelas · ${ELEMENTS[BATTLE_RULES.specialElement].code}`}
             tone="gold"
             disabled={!isMyTurn || side.stars < BATTLE_RULES.specialStarCost}
             onClick={() => send({ type: 'SPECIAL', side: 'player', target })}

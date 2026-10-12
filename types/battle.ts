@@ -21,6 +21,48 @@ export interface BaseStats {
   def: number
 }
 
+/* ---------- Elementos ---------- */
+
+export type ElementId = 'fire' | 'water' | 'ice' | 'wind' | 'thunder' | 'shadow' | 'nature'
+
+/** Marca que um golpe deixa no alvo: um elemento ou impacto físico puro. */
+export type ElementTag = ElementId | 'impact'
+
+export interface ElementDefinition {
+  id: ElementTag
+  /** Nome canônico em maiúsculas (FIRE, WATER...). */
+  code: string
+  label: string
+  /** Cor em oklch usada em chips e cards. */
+  color: string
+}
+
+export interface ElementMark {
+  tag: ElementTag
+  /** Turnos do alvo até a marca expirar. */
+  turnsLeft: number
+}
+
+export type ComboEffect =
+  /** Dano extra proporcional ao dano do golpe que fechou a combinação. */
+  | { type: 'bonusDamage'; percent: number }
+  /** Enfraquece um atributo do alvo (percent negativo). */
+  | { type: 'debuff'; stat: StatKey; percent: number; turns: number }
+
+/**
+ * Combinação elemental: ocorre quando um golpe com `inputs[1]` atinge um alvo
+ * marcado com `inputs[0]` (ou vice-versa — a ordem não importa).
+ */
+export interface ElementComboDefinition {
+  id: string
+  /** Nome canônico em maiúsculas (OVERLOAD, SHATTER...). */
+  code: string
+  label: string
+  description: string
+  inputs: [ElementTag, ElementTag]
+  effects: ComboEffect[]
+}
+
 export interface SkillDefinition {
   name: string
   description: string
@@ -30,6 +72,8 @@ export interface SkillDefinition {
   power: number
   /** Fração da DEF do alvo ignorada (0–1). */
   pierce?: number
+  /** Marca elemental que o golpe aplica. Ausente = sem elemento. */
+  element?: ElementTag
 }
 
 export interface CharacterDefinition {
@@ -110,6 +154,7 @@ export interface CombatantState {
   hp: number
   mp: number
   buffs: StatusEffect[]
+  marks: ElementMark[]
 }
 
 export interface SwapState {
@@ -140,6 +185,7 @@ export interface BossAttackDefinition {
   power: number
   telegraph: string
   selfBuff?: { stat: StatKey; percent: number; turns: number }
+  element?: ElementTag
 }
 
 export interface BossDefinition {
@@ -163,6 +209,7 @@ export interface BossState {
   patternIndex: number
   telegraph: BossAttackId
   buffs: StatusEffect[]
+  marks: ElementMark[]
   /** Dano total causado por cada lado — base da recompensa. */
   contribution: Record<SideId, number>
   lastHitBy: SideId | null
@@ -196,7 +243,7 @@ export interface BossRewardReport {
 
 /* ---------- Batalha ---------- */
 
-export type LogTone = 'neutral' | 'player' | 'enemy' | 'boss' | 'reward' | 'system'
+export type LogTone = 'neutral' | 'player' | 'enemy' | 'boss' | 'reward' | 'system' | 'combo'
 
 export interface LogEntry {
   id: number

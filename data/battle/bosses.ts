@@ -17,6 +17,7 @@ export const BOSSES: Record<BossId, BossDefinition> = {
         target: 'single',
         power: 1,
         telegraph: 'Ergue o punho contra quem mais o feriu.',
+        element: 'impact',
       },
       quake: {
         id: 'quake',
@@ -24,6 +25,7 @@ export const BOSSES: Record<BossId, BossDefinition> = {
         target: 'area',
         power: 0.7,
         telegraph: 'O chão treme. Ataque em ÁREA!',
+        element: 'nature',
       },
       fortify: {
         id: 'fortify',
@@ -39,6 +41,7 @@ export const BOSSES: Record<BossId, BossDefinition> = {
         target: 'area',
         power: 0.9,
         telegraph: 'O núcleo superaquece. Ataque em ÁREA!',
+        element: 'thunder',
       },
     },
   },

@@ -3,6 +3,7 @@ import type {
   BattleLoadout,
   BattleState,
   CombatantState,
+  ElementTag,
   SideId,
   SideState,
   TargetId,
@@ -13,6 +14,7 @@ import { BATTLE_RULES, BOSS_SCHEDULE, SWAP_RULES } from '@/data/battle/rules'
 import { SUPPORT_UNIT_IDS, SUPPORT_UNITS } from '@/data/battle/support-units'
 import { activeOf, getSide, log, opponentOf } from './context'
 import { checkWinner, damageBoss, damageSide, healActive, rollDamage } from './combat'
+import { applyElementHit, elementTargetOf, tickMarks } from './elements'
 import { runPassives, tickPassiveCooldowns } from './passives'
 import { addBuff, bossStat, maxHpOf, maxMpOf, sideStat, tickBuffs } from './stats'
 import { bossTakeTurn, spawnBoss } from './boss-ai'
@@ -22,7 +24,7 @@ type ActionOutcome = 'invalid' | 'continue' | 'ended'
 
 function createCombatant(characterId: CombatantState['characterId']): CombatantState {
   const { stats } = CHARACTERS[characterId]
-  return { characterId, hp: stats.maxHp, mp: stats.maxMp, buffs: [] }
+  return { characterId, hp: stats.maxHp, mp: stats.maxMp, buffs: [], marks: [] }
 }
 
 function createSide(id: SideId, name: string, loadout: BattleLoadout): SideState {
@@ -55,6 +57,7 @@ function beginSideTurn(state: BattleState, sideId: SideId) {
   const side = getSide(state, sideId)
   const member = activeOf(side)
   member.buffs = tickBuffs(member.buffs)
+  member.marks = tickMarks(member.marks)
   tickPassiveCooldowns(side)
   side.swap.cooldown = Math.max(0, side.swap.cooldown - 1)
   runPassives(state, sideId, 'turnStart')
@@ -88,6 +91,7 @@ function endTurn(state: BattleState) {
   } else if (state.turn === 'enemy' && state.boss) {
     state.turn = 'boss'
     state.boss.buffs = tickBuffs(state.boss.buffs)
+    state.boss.marks = tickMarks(state.boss.marks)
   } else {
     endRound(state)
   }
@@ -95,23 +99,35 @@ function endTurn(state: BattleState) {
 
 /* ---------- Ações ---------- */
 
-function strike(state: BattleState, sideId: SideId, target: TargetId, power: number, pierce: number, label: string) {
+function strike(
+  state: BattleState,
+  sideId: SideId,
+  target: TargetId,
+  power: number,
+  pierce: number,
+  label: string,
+  element?: ElementTag,
+) {
   const attacker = getSide(state, sideId)
   const atk = sideStat(attacker, 'atk')
   const attackerName = CHARACTERS[activeOf(attacker).characterId].name
 
   if (target === 'boss' && state.boss) {
+    const elementTarget = elementTargetOf(state, 'boss')
     const amount = rollDamage(state, atk, power, bossStat(state.boss, 'def'), pierce)
     log(state, `${attackerName} usou ${label} no boss: ${amount} de dano.`, sideId)
-    damageBoss(state, sideId, amount)
+    const dealt = damageBoss(state, sideId, amount)
+    applyElementHit(state, sideId, elementTarget, element, dealt)
     return
   }
   const defenderId = opponentOf(sideId)
   const defender = getSide(state, defenderId)
   const defenderName = CHARACTERS[activeOf(defender).characterId].name
+  const elementTarget = elementTargetOf(state, defenderId)
   const amount = rollDamage(state, atk, power, sideStat(defender, 'def'), pierce)
   log(state, `${attackerName} usou ${label} em ${defenderName}: ${amount} de dano.`, sideId)
-  damageSide(state, defenderId, amount)
+  const dealt = damageSide(state, defenderId, amount)
+  applyElementHit(state, sideId, elementTarget, element, dealt)
 }
 
 function performSideAction(state: BattleState, action: Exclude<BattleAction, { type: 'BOSS_ACT' | 'DISMISS_REWARD' | 'RESET' }>): ActionOutcome {
@@ -123,7 +139,7 @@ function performSideAction(state: BattleState, action: Exclude<BattleAction, { t
 
   switch (action.type) {
     case 'ATTACK':
-      strike(state, action.side, action.target, 1, 0, 'Ataque')
+      strike(state, action.side, action.target, 1, 0, 'Ataque', BATTLE_RULES.attackElement)
       return 'ended'
 
     case 'SKILL': {
@@ -134,7 +150,7 @@ function performSideAction(state: BattleState, action: Exclude<BattleAction, { t
         const healed = healActive(state, action.side, Math.round(maxHpOf(member) * skill.power))
         log(state, `${character.name} usou ${skill.name}: +${healed} HP.`, action.side)
       } else {
-        strike(state, action.side, action.target, skill.power, skill.pierce ?? 0, skill.name)
+        strike(state, action.side, action.target, skill.power, skill.pierce ?? 0, skill.name, skill.element)
       }
       return 'ended'
     }
@@ -142,7 +158,15 @@ function performSideAction(state: BattleState, action: Exclude<BattleAction, { t
     case 'SPECIAL':
       if (side.stars < BATTLE_RULES.specialStarCost) return 'invalid'
       side.stars -= BATTLE_RULES.specialStarCost
-      strike(state, action.side, action.target, BATTLE_RULES.specialPower, BATTLE_RULES.specialPierce, 'Golpe Estelar')
+      strike(
+        state,
+        action.side,
+        action.target,
+        BATTLE_RULES.specialPower,
+        BATTLE_RULES.specialPierce,
+        'Golpe Estelar',
+        BATTLE_RULES.specialElement,
+      )
       return 'ended'
 
     case 'DEFEND':

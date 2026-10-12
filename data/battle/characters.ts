@@ -13,6 +13,7 @@ export const CHARACTERS: Record<CharacterId, CharacterDefinition> = {
       mpCost: 8,
       kind: 'damage',
       power: 1.6,
+      element: 'impact',
     },
   },
   mage: {
@@ -27,6 +28,7 @@ export const CHARACTERS: Record<CharacterId, CharacterDefinition> = {
       mpCost: 12,
       kind: 'damage',
       power: 1.9,
+      element: 'fire',
     },
   },
   archer: {
@@ -42,6 +44,7 @@ export const CHARACTERS: Record<CharacterId, CharacterDefinition> = {
       kind: 'damage',
       power: 1.4,
       pierce: 0.5,
+      element: 'wind',
     },
   },
   cleric: {

@@ -1,7 +1,8 @@
-import type { BattleState, BossState, SideId } from '@/types'
+import type { BattleState, BossState, ElementTag, SideId } from '@/types'
 import { BOSSES } from '@/data/battle/bosses'
 import { activeOf, getSide, log, rand } from './context'
 import { damageSide, rollDamage } from './combat'
+import { applyElementHit, elementTargetOf } from './elements'
 import { addBuff, bossStat, sideStat, STAT_LABEL } from './stats'
 
 export function spawnBoss(state: BattleState, bossId: BossState['bossId']) {
@@ -14,6 +15,7 @@ export function spawnBoss(state: BattleState, bossId: BossState['bossId']) {
     patternIndex: 0,
     telegraph: definition.pattern[0],
     buffs: [],
+    marks: [],
     contribution: { player: 0, enemy: 0 },
     lastHitBy: null,
   }
@@ -27,11 +29,14 @@ function pickThreatTarget(state: BattleState, boss: BossState): SideId {
   return player > enemy ? 'player' : 'enemy'
 }
 
-function hitSide(state: BattleState, boss: BossState, sideId: SideId, power: number) {
+function hitSide(state: BattleState, boss: BossState, sideId: SideId, power: number, element?: ElementTag) {
   const side = getSide(state, sideId)
   if (activeOf(side).hp <= 0) return 0
+  const target = elementTargetOf(state, sideId)
   const amount = rollDamage(state, bossStat(boss, 'atk'), power, sideStat(side, 'def'))
-  return damageSide(state, sideId, amount)
+  const dealt = damageSide(state, sideId, amount)
+  applyElementHit(state, null, target, element, dealt)
+  return dealt
 }
 
 /** Executa o ataque anunciado (telegraph) e anuncia o próximo. */
@@ -44,13 +49,13 @@ export function bossTakeTurn(state: BattleState) {
   switch (attack.target) {
     case 'single': {
       const target = pickThreatTarget(state, boss)
-      const dealt = hitSide(state, boss, target, attack.power)
+      const dealt = hitSide(state, boss, target, attack.power, attack.element)
       log(state, `${definition.name} usou ${attack.name} em ${getSide(state, target).name}: ${dealt} de dano.`, 'boss')
       break
     }
     case 'area': {
-      const toPlayer = hitSide(state, boss, 'player', attack.power)
-      const toEnemy = hitSide(state, boss, 'enemy', attack.power)
+      const toPlayer = hitSide(state, boss, 'player', attack.power, attack.element)
+      const toEnemy = hitSide(state, boss, 'enemy', attack.power, attack.element)
       log(state, `${definition.name} usou ${attack.name}! Você: ${toPlayer}, Bot: ${toEnemy}.`, 'boss')
       break
     }

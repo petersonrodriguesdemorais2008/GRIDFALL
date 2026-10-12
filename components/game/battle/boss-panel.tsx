@@ -6,6 +6,7 @@ import { BOSS_SCHEDULE } from '@/data/battle/rules'
 import { STRINGS } from '@/data/strings'
 import { bossStat } from '@/game/battle/stats'
 import { cn } from '@/lib/utils'
+import { ElementChip } from '../ui/element-chip'
 import { ImpactLayer, lastHitId } from './impact-layer'
 import { StatBar } from './stat-bar'
 import { ContributionBar } from './contribution-bar'
@@ -76,10 +77,15 @@ export function BossPanel({ state }: BossPanelProps) {
             )}
           </div>
           <StatBar label="HP" value={boss.hp} max={boss.maxHp} tone="boss" size="md" />
-          <p className="font-display text-[7px] text-parchment/55">
-            ATK {bossStat(boss, 'atk')} · DEF {bossStat(boss, 'def')}
-            {boss.buffs.map((b) => ` · ${b.label} (${b.turnsLeft})`).join('')}
-          </p>
+          <div className="flex flex-wrap items-center gap-1">
+            <p className="font-display text-[7px] text-parchment/55">
+              ATK {bossStat(boss, 'atk')} · DEF {bossStat(boss, 'def')}
+              {boss.buffs.map((b) => ` · ${b.label} (${b.turnsLeft})`).join('')}
+            </p>
+            {boss.marks.map((mark) => (
+              <ElementChip key={mark.tag} tag={mark.tag} suffix={`(${mark.turnsLeft})`} />
+            ))}
+          </div>
           <ContributionBar player={boss.contribution.player} enemy={boss.contribution.enemy} />
         </div>
       </div>

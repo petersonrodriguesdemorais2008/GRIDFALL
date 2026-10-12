@@ -1,4 +1,4 @@
-import type { BossId, ConsumableId, RewardTierId, StatKey } from '@/types'
+import type { BossId, ConsumableId, ElementTag, RewardTierId, StatKey } from '@/types'
 
 export const BATTLE_RULES = {
   roundsPerFarming: 3,
@@ -9,6 +9,9 @@ export const BATTLE_RULES = {
   specialStarCost: 3,
   specialPower: 1.8,
   specialPierce: 0.3,
+  /** Marca elemental do ataque básico e do Golpe Estelar. */
+  attackElement: 'impact' satisfies ElementTag,
+  specialElement: 'thunder' satisfies ElementTag,
   defendDefPercent: 50,
   defendMpRestore: 5,
   /** Limites de buffs somados por atributo. */

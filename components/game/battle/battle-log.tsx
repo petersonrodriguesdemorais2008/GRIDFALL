@@ -9,6 +9,7 @@ const toneClass: Record<LogTone, string> = {
   boss: 'text-gold',
   reward: 'text-chart-3',
   system: 'text-parchment/60',
+  combo: 'font-semibold text-chart-5',
 }
 
 const VISIBLE_ENTRIES = 6

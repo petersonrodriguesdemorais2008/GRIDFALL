@@ -8,6 +8,7 @@ import { STRINGS } from '@/data/strings'
 import { activeOf } from '@/game/battle/context'
 import { maxHpOf, maxMpOf, sideStat } from '@/game/battle/stats'
 import { cn } from '@/lib/utils'
+import { ElementChip } from '../ui/element-chip'
 import { ImpactLayer, lastHitId } from './impact-layer'
 import { StatBar } from './stat-bar'
 
@@ -105,11 +106,17 @@ export function SidePanel({ side, impacts, isTurn }: SidePanelProps) {
           {member.buffs.map((buff) => (
             <span
               key={buff.id}
-              className="flex items-center gap-1 border border-arcane/60 bg-arcane/15 px-1 py-0.5 font-body text-[11px] leading-none text-arcane"
+              className={cn(
+                'flex items-center gap-1 border px-1 py-0.5 font-body text-[11px] leading-none',
+                buff.percent < 0 ? 'border-destructive/60 bg-destructive/15 text-destructive' : 'border-arcane/60 bg-arcane/15 text-arcane',
+              )}
             >
               <Shield className="size-3" aria-hidden="true" />
               {buff.label} ({buff.turnsLeft})
             </span>
+          ))}
+          {member.marks.map((mark) => (
+            <ElementChip key={mark.tag} tag={mark.tag} suffix={`(${mark.turnsLeft})`} />
           ))}
         </div>
 
