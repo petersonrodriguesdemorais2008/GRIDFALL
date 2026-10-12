@@ -16,8 +16,15 @@ export const SCENES: Record<SceneId, SceneDefinition> = {
     name: 'Arena de Treino',
     description: 'Campo de testes seguro. Pratique movimentação e habilidades sem risco.',
   },
+  arena: {
+    id: 'arena',
+    name: 'Arena de Eldoria',
+    description: 'Duelo por turnos contra o bot, com bosses a cada dois Farmings.',
+  },
 }
 
 export const INITIAL_SCENE: SceneId = 'world'
 
 export const TRAINING_SCENE: SceneId = 'training'
+
+export const ARENA_SCENE: SceneId = 'arena'

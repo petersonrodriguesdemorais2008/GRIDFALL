@@ -1,7 +1,8 @@
 import type { SceneId } from './scene'
 import type { ConnectionStatus } from './network'
+import type { BattleLoadout } from './battle'
 
-export type GamePhase = 'boot' | 'title' | 'menu' | 'modeSelect' | 'loading' | 'world' | 'paused'
+export type GamePhase = 'boot' | 'title' | 'menu' | 'modeSelect' | 'teamSelect' | 'loading' | 'world' | 'paused'
 
 export type MenuScreen = 'main' | 'collection' | 'shop' | 'howToPlay' | 'settings'
 
@@ -22,6 +23,7 @@ export interface GameSession {
   playerId: string
   mode: PlayableGameMode
   startedAt: number
+  loadout: BattleLoadout | null
 }
 
 export interface GameState {
@@ -39,7 +41,8 @@ export type GameAction =
   | { type: 'OPEN_MENU' }
   | { type: 'SET_MENU_SCREEN'; screen: MenuScreen }
   | { type: 'OPEN_MODE_SELECT' }
-  | { type: 'START_GAME'; playerId: string; mode: PlayableGameMode }
+  | { type: 'OPEN_TEAM_SELECT' }
+  | { type: 'START_GAME'; playerId: string; mode: PlayableGameMode; loadout?: BattleLoadout }
   | { type: 'LOADING_COMPLETE'; scene: SceneId }
   | { type: 'PAUSE' }
   | { type: 'RESUME' }

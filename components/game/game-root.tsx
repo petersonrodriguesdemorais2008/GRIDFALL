@@ -8,6 +8,8 @@ import { MainMenuScreen } from './screens/main-menu/main-menu-screen'
 import { ModeSelectScreen } from './screens/mode-select/mode-select-screen'
 import { LoadingScreen } from './screens/loading-screen'
 import { WorldScreen } from './screens/world-screen'
+import { TeamSelectScreen } from './screens/team-select/team-select-screen'
+import { BattleScreen } from './battle/battle-screen'
 
 /**
  * Ponto de entrada da interface. Lê a fase do jogo na store
@@ -15,6 +17,7 @@ import { WorldScreen } from './screens/world-screen'
  */
 export function GameRoot() {
   const phase = useGameStore((s) => s.phase)
+  const isBattle = useGameStore((s) => s.session?.mode === 'vsBot')
   useKeyboardInput()
 
   return (
@@ -23,7 +26,8 @@ export function GameRoot() {
       {phase === 'menu' && <MainMenuScreen />}
       {phase === 'modeSelect' && <ModeSelectScreen />}
       {phase === 'loading' && <LoadingScreen />}
-      {(phase === 'world' || phase === 'paused') && <WorldScreen />}
+      {phase === 'teamSelect' && <TeamSelectScreen />}
+      {(phase === 'world' || phase === 'paused') && (isBattle ? <BattleScreen /> : <WorldScreen />)}
     </GameShell>
   )
 }
