@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { GAME_CONFIG } from '@/data/config'
-import { INITIAL_SCENE, SCENES, TRAINING_SCENE } from '@/data/scenes'
+import { ARENA_SCENE, SCENES, TRAINING_SCENE } from '@/data/scenes'
 import { STRINGS } from '@/data/strings'
 import { useGameDispatch, useGameStore } from '@/hooks/use-game-store'
 import { RpgFrame } from '../ui/rpg-frame'
@@ -12,7 +12,7 @@ const STEPS = 20
 export function LoadingScreen() {
   const dispatch = useGameDispatch()
   const mode = useGameStore((s) => s.session?.mode ?? 'vsBot')
-  const targetScene = mode === 'training' ? TRAINING_SCENE : INITIAL_SCENE
+  const targetScene = mode === 'training' ? TRAINING_SCENE : ARENA_SCENE
   const [progress, setProgress] = useState(0)
   const [tip] = useState(
     () => STRINGS.loading.tips[Math.floor(Math.random() * STRINGS.loading.tips.length)],

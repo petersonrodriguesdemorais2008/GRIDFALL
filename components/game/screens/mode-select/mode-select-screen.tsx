@@ -36,6 +36,10 @@ export function ModeSelectScreen() {
       showNotice(mode.devNotice ?? STRINGS.modeSelect.inDevelopment)
       return
     }
+    if (mode.id === 'vsBot') {
+      dispatch({ type: 'OPEN_TEAM_SELECT' })
+      return
+    }
     dispatch({ type: 'START_GAME', playerId: createId('player'), mode: mode.id })
   }
 

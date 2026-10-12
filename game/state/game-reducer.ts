@@ -29,14 +29,24 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return state.menuScreen === action.screen ? state : { ...state, menuScreen: action.screen }
 
     case 'OPEN_MODE_SELECT':
-      return state.phase === 'menu' ? { ...state, phase: 'modeSelect', menuScreen: 'main' } : state
+      return state.phase === 'menu' || state.phase === 'teamSelect'
+        ? { ...state, phase: 'modeSelect', menuScreen: 'main' }
+        : state
+
+    case 'OPEN_TEAM_SELECT':
+      return state.phase === 'modeSelect' ? { ...state, phase: 'teamSelect' } : state
 
     case 'START_GAME':
       return {
         ...state,
         phase: 'loading',
         menuScreen: 'main',
-        session: { playerId: action.playerId, mode: action.mode, startedAt: Date.now() },
+        session: {
+          playerId: action.playerId,
+          mode: action.mode,
+          startedAt: Date.now(),
+          loadout: action.loadout ?? null,
+        },
       }
 
     case 'LOADING_COMPLETE':
